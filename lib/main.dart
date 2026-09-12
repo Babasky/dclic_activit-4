@@ -39,7 +39,16 @@ class PageAccueil extends StatelessWidget {
         ),
         actions: [
           IconButton(
-            onPressed: () {},
+            onPressed: () async {
+              final Redacteur? selection = await showSearch<Redacteur?>(
+              context: context,
+              delegate: RedacteurSearchDelegate(),
+              );
+
+              if (selection != null) {
+              // Traiter le rédacteur sélectionné (ex: ouvrir sa fiche de détail)
+              }
+              },
             icon: Icon(Icons.search),
             color: Colors.white,
           ),
@@ -148,7 +157,7 @@ class _RedacteurInterfaceState extends State<RedacteurInterface> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('Annuler',style: TextStyle(color: Colors.red),),
+              child: const Text('Annuler', style: TextStyle(color: Colors.red)),
             ),
             TextButton(
               onPressed: () async {
@@ -162,7 +171,10 @@ class _RedacteurInterfaceState extends State<RedacteurInterface> {
                 if (dialogContext.mounted) Navigator.of(dialogContext).pop();
                 await _chargerRedacteurs();
               },
-              child: const Text('Enregistrer', style: TextStyle(color: Colors.green),),
+              child: const Text(
+                'Enregistrer',
+                style: TextStyle(color: Colors.green),
+              ),
             ),
           ],
         );
@@ -180,10 +192,14 @@ class _RedacteurInterfaceState extends State<RedacteurInterface> {
             'Voulez-vous vraiment supprimer ${redacteur.prenom} ${redacteur.nom} ?',
           ),
           actions: [
-            TextButton(onPressed: () => Navigator.of(dialogContext).pop(false),
-                child: const Text('Annuler')),
-            TextButton(onPressed: () => Navigator.of(dialogContext).pop(true),
-                child: const Text('Supprimer')),
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+              child: const Text('Annuler'),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: const Text('Supprimer'),
+            ),
           ],
         );
       },
@@ -193,7 +209,6 @@ class _RedacteurInterfaceState extends State<RedacteurInterface> {
       await DatabaseManager.instance.deleteRedacteur(redacteur.id!);
       await _chargerRedacteurs();
     }
-
   }
 
   @override
@@ -260,6 +275,64 @@ class _RedacteurInterfaceState extends State<RedacteurInterface> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class RedacteurSearchDelegate extends SearchDelegate<Redacteur?> {
+  @override
+  List<Widget>? buildActions(BuildContext context) {
+    return [
+      if (query.isNotEmpty)
+        IconButton(icon: const Icon(Icons.clear), onPressed: () => query = ''),
+    ];
+  }
+
+  @override
+  Widget? buildLeading(BuildContext context) {
+    return IconButton(
+      icon: const Icon(Icons.arrow_back),
+      onPressed: () => close(context, null),
+    );
+  }
+
+  @override
+  Widget buildResults(BuildContext context) => _buildSearchResults();
+
+  @override
+  Widget buildSuggestions(BuildContext context) => _buildSearchResults();
+
+  Widget _buildSearchResults() {
+    if (query.trim().isEmpty) {
+      return const Center(child: Text('Tapez un nom ou prénom à rechercher'));
+    }
+
+    return FutureBuilder<List<Redacteur>>(
+      future: DatabaseManager.instance.searchRedacteurs(query),
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Center(child: CircularProgressIndicator());
+        }
+        if (!snapshot.hasData || snapshot.data!.isEmpty) {
+          return const Center(child: Text('Aucun rédacteur trouvé'));
+        }
+
+        final resultats = snapshot.data!;
+        return ListView.builder(
+          itemCount: resultats.length,
+          itemBuilder: (context, index) {
+            final redacteur = resultats[index];
+            return ListTile(
+              leading: CircleAvatar(
+                child: Text(redacteur.nom[0].toUpperCase()),
+              ),
+              title: Text('${redacteur.nom} ${redacteur.prenom}'),
+              subtitle: Text(redacteur.email),
+              onTap: () => close(context, redacteur),
+            );
+          },
+        );
+      },
     );
   }
 }

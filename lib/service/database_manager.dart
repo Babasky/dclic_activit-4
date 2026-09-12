@@ -26,7 +26,7 @@ class DatabaseManager {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             nom TEXT NOT NULL,
             prenom TEXT NOT NULL,
-            email TEXT NOT NULL
+            email TEXT NOT NULL UNIQUE
           )
         ''');
       },
@@ -57,5 +57,17 @@ class DatabaseManager {
   Future<int> deleteRedacteur(int id) async {
     final db = await database;
     return db.delete(tableRedacteur, where: 'id = ?', whereArgs: [id]);
+  }
+
+  // Recherche par nom ou prénom
+  Future<List<Redacteur>> searchRedacteurs(String query) async {
+    final db = await database;
+    final lignes = await db.query(
+      tableRedacteur,
+      where: 'nom LIKE ? OR prenom LIKE ?',
+      whereArgs: ['%$query%', '%$query%'],
+      orderBy: 'nom',
+    );
+    return lignes.map((ligne) => Redacteur.fromMap(ligne)).toList();
   }
 }
