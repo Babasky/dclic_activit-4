@@ -1,0 +1,61 @@
+import 'package:activite1/modele/redacteur.dart';
+import 'package:path/path.dart';
+import 'package:sqflite/sqflite.dart';
+
+class DatabaseManager {
+  DatabaseManager._interne();
+  static final DatabaseManager instance = DatabaseManager._interne();
+
+  Database? _database;
+  static const String tableRedacteur = 'redacteur';
+
+  Future<Database> get database async {
+    if (_database != null) return _database!;
+    _database = await _initDatabase();
+    return _database!;
+  }
+
+  Future<Database> _initDatabase() async {
+    final chemin = join(await getDatabasesPath(), 'redacteurs.db');
+    return openDatabase(
+      chemin,
+      version: 1,
+      onCreate: (db, version) {
+        return db.execute('''
+          CREATE TABLE $tableRedacteur(
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            nom TEXT NOT NULL,
+            prenom TEXT NOT NULL,
+            email TEXT NOT NULL
+          )
+        ''');
+      },
+    );
+  }
+
+  Future<List<Redacteur>> getAllRedacteur() async {
+    final db = await database;
+    final lignes = await db.query(tableRedacteur, orderBy: 'nom');
+    return lignes.map((ligne) => Redacteur.fromMap(ligne)).toList();
+  }
+
+  Future<int> insertRedacteur(Redacteur redacteur) async {
+    final db = await database;
+    return db.insert(tableRedacteur, redacteur.toMap());
+  }
+
+  Future<int> updateRedacteur(Redacteur redacteur) async {
+    final db = await database;
+    return db.update(
+      tableRedacteur,
+      redacteur.toMap(),
+      where: 'id = ?',
+      whereArgs: [redacteur.id],
+    );
+  }
+
+  Future<int> deleteRedacteur(int id) async {
+    final db = await database;
+    return db.delete(tableRedacteur, where: 'id = ?', whereArgs: [id]);
+  }
+}
