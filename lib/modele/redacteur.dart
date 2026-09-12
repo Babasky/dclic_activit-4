@@ -3,8 +3,10 @@ class Redacteur {
   final String nom;
   final String prenom;
   final String email;
+  // Construteur avec id
   Redacteur({required this.id, required this.nom, required this.prenom, required this.email});
 
+  // Construteur sans id
   Redacteur.sansId({required this.nom, required this.prenom, required this.email}):id=null;
 
   Map<String, dynamic> toMap(){

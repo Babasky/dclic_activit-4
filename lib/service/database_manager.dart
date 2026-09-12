@@ -9,12 +9,14 @@ class DatabaseManager {
   Database? _database;
   static const String tableRedacteur = 'redacteur';
 
+  // Recupération de la base de données
   Future<Database> get database async {
     if (_database != null) return _database!;
     _database = await _initDatabase();
     return _database!;
   }
 
+  // intialisation de la base de données
   Future<Database> _initDatabase() async {
     final chemin = join(await getDatabasesPath(), 'redacteurs.db');
     return openDatabase(
@@ -33,17 +35,20 @@ class DatabaseManager {
     );
   }
 
+  // Requête de recupération de tous les rédacteurs
   Future<List<Redacteur>> getAllRedacteur() async {
     final db = await database;
     final lignes = await db.query(tableRedacteur, orderBy: 'nom');
     return lignes.map((ligne) => Redacteur.fromMap(ligne)).toList();
   }
 
+  // Requête d'insertion de rédacteur
   Future<int> insertRedacteur(Redacteur redacteur) async {
     final db = await database;
     return db.insert(tableRedacteur, redacteur.toMap());
   }
 
+  // Requête de modification d'un rédacteur
   Future<int> updateRedacteur(Redacteur redacteur) async {
     final db = await database;
     return db.update(
@@ -54,6 +59,7 @@ class DatabaseManager {
     );
   }
 
+  // Requête de suppression d'un rédacteur
   Future<int> deleteRedacteur(int id) async {
     final db = await database;
     return db.delete(tableRedacteur, where: 'id = ?', whereArgs: [id]);

@@ -2,10 +2,12 @@ import 'package:activite1/service/database_manager.dart';
 import 'package:activite1/modele/redacteur.dart';
 import 'package:flutter/material.dart';
 
+/* Fonction qui permet de lancer l'application*/
 void main() {
   runApp(const MonAppli());
 }
 
+/* class qui permet rendre la partie la vue de l'application*/
 class MonAppli extends StatelessWidget {
   const MonAppli({super.key});
 
@@ -20,6 +22,8 @@ class MonAppli extends StatelessWidget {
   }
 }
 
+
+/* Page Accueil qui englobe la partie formulaire et la fonctionnalité de recherche */
 class PageAccueil extends StatelessWidget {
   const PageAccueil({super.key});
 
@@ -60,6 +64,7 @@ class PageAccueil extends StatelessWidget {
   }
 }
 
+
 class RedacteurInterface extends StatefulWidget {
   const RedacteurInterface({super.key});
 
@@ -67,23 +72,26 @@ class RedacteurInterface extends StatefulWidget {
   State<RedacteurInterface> createState() => _RedacteurInterfaceState();
 }
 
+/* Fonctionnalité crud des redacteur*/
 class _RedacteurInterfaceState extends State<RedacteurInterface> {
   final _nomController = TextEditingController();
   final _prenomController = TextEditingController();
   final _emailController = TextEditingController();
   List<Redacteur> _redacteurs = [];
 
+  /* Methode d'initialisation du state*/
   @override
   void initState() {
     super.initState();
     _chargerRedacteurs();
   }
 
+  /* Methode de recuperation des redacteurs*/
   Future<void> _chargerRedacteurs() async {
     final liste = await DatabaseManager.instance.getAllRedacteur();
     setState(() => _redacteurs = liste);
   }
-
+  /* Methode d'ajout des redacteurs*/
   Future<void> _ajouterRedacteur() async {
     final nom = _nomController.text.trim();
     final prenom = _prenomController.text.trim();
@@ -127,6 +135,7 @@ class _RedacteurInterfaceState extends State<RedacteurInterface> {
     }
   }
 
+  /* Methode de modification des redacteurs*/
   Future<void> _modifierRedacteur(Redacteur redacteur) async {
     final nomController = TextEditingController(text: redacteur.nom);
     final prenomController = TextEditingController(text: redacteur.prenom);
@@ -182,6 +191,7 @@ class _RedacteurInterfaceState extends State<RedacteurInterface> {
     );
   }
 
+  /* Methode de suppression des redacteurs*/
   Future<void> _supprimerRedacteur(Redacteur redacteur) async {
     final confirme = await showDialog<bool>(
       context: context,
@@ -279,6 +289,8 @@ class _RedacteurInterfaceState extends State<RedacteurInterface> {
   }
 }
 
+
+/* Class permettant d'effectuer des recherches*/
 class RedacteurSearchDelegate extends SearchDelegate<Redacteur?> {
   @override
   List<Widget>? buildActions(BuildContext context) {
